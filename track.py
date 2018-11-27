@@ -30,8 +30,16 @@ def lambda_handler(event, context):
             TargetArn = secretARN,
             Message = goodResponse
         )
+    elif messageId is None:     # I suspect that SPOT may return status_code 200 (because the API will still send a response)
+                                # even if the tracker is off, so we have to check for undefined - I'll test this next time I can physically access my SPOT beacon 
+        invalidMessage = "The tracker is not on and / or is not sending messages."
+        client = boto3.client('sns')
+        responseSNS = client.publish(
+            TargetArn = secretARN,
+            Message = invalidMessage
+        )
     else:
-        badResponse = "The tracker is not on and / or is not sending messages."
+        badResponse = "There is an issue with the SPOT service"
         client = boto3.client('sns')
         responseSNS = client.publish(
             TargetArn = secretARN,
